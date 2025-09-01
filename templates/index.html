@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>CSV Upload + Regression Tool</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+
+        .table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .table th,
+        .table td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: left;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h2>Upload CSV and Run Regression</h2>
+
+    {% if success %}
+    <p style="color: green; font-weight: bold;">
+        ✅ File uploaded and processed successfully!
+    </p>
+    {% endif %}
+
+    {% if error %}
+    <p style="color: red; font-weight: bold;">
+        ❌ {{ error }}
+    </p>
+    {% endif %}
+
+    <form method="POST" enctype="multipart/form-data" action="/">
+
+        {% if not session.get('file_path') %}
+        <label for="file">Choose CSV file:</label><br>
+        <input type="file" name="file" accept=".csv" required><br><br>
+        {% else %}
+        <p style="color: green;">
+            📁 File already uploaded. You can change options below or
+            <a href="/reset">upload another file</a>.
+        </p>
+        {% endif %}
+
+        <!-- Default settings checkbox -->
+        <label>
+            <input type="checkbox" name="use_default" id="use_default" {% if use_default %}checked{% endif %}
+                onchange="toggleAdvanced()">
+            Use default regression settings
+        </label><br><br>
+
+        <!-- Advanced options (initially hidden) -->
+        <div id="advanced_options" style="display: none; padding-left: 20px;">
+            <p><strong>Advanced options:</strong></p>
+            <h3>Model specification:</h3>
+            <label><input type="checkbox" name="constant"> Add constant</label><br>
+            <label><input type="checkbox" name="standardize"> Standardize predictors</label><br>
+            <label><input type="checkbox" name="log_y"> Log-transform target (y)</label><br>
+            <h3>Model testing:</h3>
+            <label><input type="checkbox" name="run_vif"> Check multicollinearity (VIF)</label><br>
+            <h3>Plots:</h3>
+            <label><input type="checkbox" name="residual_plot"> Show residual plots</label><br>
+        </div>
+
+        <br>
+        <input type="submit" value="Run Regression">
+    </form>
+
+    <!-- JS to toggle advanced settings -->
+    <script>
+        function toggleAdvanced() {
+            const isChecked = document.getElementById("use_default").checked;
+            document.getElementById("advanced_options").style.display = isChecked ? "none" : "block";
+        }
+
+        // Ensure correct initial state
+        window.onload = function () {
+            toggleAdvanced();
+        };
+    </script>
+
+    {% if summary %}
+    <hr>
+    <h3>Regression Summary</h3>
+    <pre style="font-size: 0.85em;">{{ summary }}</pre>
+    {% endif %}
+
+    <hr>
+    <p style="font-size: 0.9em; color: gray;">
+        Uploaded CSV file must have headers (even meaningless). The dependent variable must be named <code>y</code>.<br>
+        ⚠️ Max file size: 0.5MB | Max rows: 50 | Max columns: 5<br>
+        This is a demo tool and not intended for large datasets or production use.
+    </p>
+
+</body>
+
+</html>
