@@ -37,7 +37,6 @@ def reset():
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    return "✅ App loaded — skipping render_template temporarily"
     # Clear session file_path if file no longer exists
     filepath = session.get('file_path')
     if filepath and not os.path.exists(filepath):
@@ -123,3 +122,4 @@ def index():
 if __name__ == '__main__':
 
     app.run(debug=True)
+
