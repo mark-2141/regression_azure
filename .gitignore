@@ -1,0 +1,18 @@
+#envs
+venv/
+.env/
+.venv/
+
+#python
+__pycache__/
+*$py.class
+*.py[cod]
+
+#logs
+*.log
+
+#not necessary
+uploads/
+
+#vscode
+.vscode/
