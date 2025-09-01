@@ -12,7 +12,7 @@ MAX_COLS = 5
 
 
 app = Flask(__name__)
-app.config['UPLOAD_FOLDER'] = os.path.join(os.getcwd(), 'uploads')
+app.config['UPLOAD_FOLDER'] = 'uploads'
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 app.config['MAX_CONTENT_LENGTH'] = 0.5 * 1024 * 1024  # 0.5 MB
 app.config['SESSION_TYPE'] = 'filesystem'
@@ -37,6 +37,7 @@ def reset():
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
+    return "✅ App loaded — skipping render_template temporarily"
     # Clear session file_path if file no longer exists
     filepath = session.get('file_path')
     if filepath and not os.path.exists(filepath):
@@ -120,4 +121,5 @@ def index():
     return render_template('index.html', success=False, error=None, summary=None, use_default=True)
 
 if __name__ == '__main__':
+
     app.run(debug=True)
