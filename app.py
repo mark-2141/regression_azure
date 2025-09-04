@@ -16,7 +16,7 @@ app.config['UPLOAD_FOLDER'] = 'uploads'
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 app.config['MAX_CONTENT_LENGTH'] = 0.5 * 1024 * 1024  # 0.5 MB
 app.config['SESSION_TYPE'] = 'filesystem'
-app.secret_key = 'your_secret_key_here'
+app.secret_key = os.getenv("SECRET_KEY", "fallback")
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 @app.errorhandler(RequestEntityTooLarge)
@@ -122,4 +122,5 @@ def index():
 if __name__ == '__main__':
 
     app.run(debug=True)
+
 
