@@ -14,7 +14,7 @@ Deployed on Azure
 
 ## Try It Out
 
-[Live Demo](flask-regression-app-c3c7h3ctayf5b0e7.polandcentral-01.azurewebsites.net)
+[Live Demo](https://flask-regression-app-c3c7h3ctayf5b0e7.polandcentral-01.azurewebsites.net)
 
 ---
 
