@@ -6,17 +6,25 @@ import pandas as pd
 import statsmodels.api as sm
 import numpy as np
 import os
+import csv
+import matplotlib
+matplotlib.use('Agg')  # Use non-GUI backend
+import matplotlib.pyplot as plt
+import io
+import base64
+from statsmodels.stats.outliers_influence import variance_inflation_factor
+import statsmodels.api as sm
 
 MAX_ROWS = 50
 MAX_COLS = 5
 
 
 app = Flask(__name__)
-app.config['UPLOAD_FOLDER'] = 'uploads'
+app.config['UPLOAD_FOLDER'] = os.path.join(os.getcwd(), 'uploads')
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 app.config['MAX_CONTENT_LENGTH'] = 0.5 * 1024 * 1024  # 0.5 MB
 app.config['SESSION_TYPE'] = 'filesystem'
-app.secret_key = os.getenv("SECRET_KEY", "fallback")
+app.secret_key = os.getenv('SECRET_KEY', 'some_secret')
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 @app.errorhandler(RequestEntityTooLarge)
@@ -70,7 +78,15 @@ def index():
                 return render_template('index.html', error="No file selected or uploaded.", success=False, summary=None, use_default=True)
         # Read CSV
         try:
-            df = pd.read_csv(filepath, delimiter = ";")
+            with open(filepath, 'r', encoding = 'utf-8') as f:
+                sample = f.read(2048)
+                try:
+                    dialect = csv.Sniffer().sniff(sample, delimiters=[",", ";", "|", "\t"])
+                    delimiter = dialect.delimiter
+                except:
+                    delimiter = ","
+            
+            df = pd.read_csv(filepath, delimiter=delimiter)
             
             if df.shape[0] > MAX_ROWS:
                 return render_template('index.html', error=f"Too many rows (max {MAX_ROWS})",use_default=True)
@@ -110,9 +126,37 @@ def index():
             model = sm.OLS(y, X).fit() 
             # Extract regression results 
             summary_text = model.summary().as_text() 
-            # Render results to HTML 
-            return render_template('index.html', success=True, summary=summary_text, use_default=use_default)
-            
+
+            # --- VIF Calculation ---
+            vif_table = None
+            if run_vif:
+                vif_data = pd.DataFrame()
+                vif_data["feature"] = X.columns
+                vif_data["VIF"] = [variance_inflation_factor(X.values, i) for i in range(X.shape[1])]
+                vif_table = vif_data.to_html(index=False, classes="table", border=0)
+
+            # --- Q-Q Plot Generation ---
+            qq_plot_base64 = None
+            if residual_plot:
+                fig = sm.qqplot(model.resid, line='s')
+                plt.title("Q-Q Plot of Residuals")
+                buf = io.BytesIO()
+                plt.savefig(buf, format='png')
+                plt.close(fig)
+                buf.seek(0)
+                qq_plot_base64 = base64.b64encode(buf.getvalue()).decode('utf-8')
+
+            # Render results
+            return render_template(
+                'index.html',
+                success=True,
+                summary=summary_text,
+                use_default=use_default,
+                vif_table=vif_table,
+                qq_plot_base64=qq_plot_base64
+            )
+
+
         except Exception as e:
             return render_template('index.html', error=f"Error processing file: {e}", success=False, summary=None, use_default=True)
             
@@ -120,7 +164,4 @@ def index():
     return render_template('index.html', success=False, error=None, summary=None, use_default=True)
 
 if __name__ == '__main__':
-
     app.run(debug=True)
-
-
