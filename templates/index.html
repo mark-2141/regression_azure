@@ -99,6 +99,19 @@
     <pre style="font-size: 0.85em;">{{ summary }}</pre>
     {% endif %}
 
+
+    {% if vif_table %}
+    <hr>
+    <h3>Variance Inflation Factor (VIF)</h3>
+    {{ vif_table | safe }}
+    {% endif %}
+
+    {% if qq_plot_base64 %}
+    <hr>
+    <h3>Q-Q Plot of Residuals</h3>
+    <img src="data:image/png;base64,{{ qq_plot_base64 }}" alt="Q-Q Plot" style="max-width: 100%; height: auto;">
+    {% endif %}
+
     <hr>
     <p style="font-size: 0.9em; color: gray;">
         Uploaded CSV file must have headers (even meaningless). The dependent variable must be named <code>y</code>.<br>
